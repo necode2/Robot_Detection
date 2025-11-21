@@ -9,12 +9,12 @@ class FaceRecognizer:
         """
         Simple face recognizer using template matching.
         
-        Args:
-            contacts_folder: Path to folder containing images named as "PersonName.jpg"
+        contacts_folder: Path to folder containing images named as "PersonName.jpg"
         """
         self.contacts_folder = contacts_folder
         self.known_faces = []
         self.known_names = []
+        self.updated_number_of_contacts = 0
         
         # Initialize face detector (Haar Cascade)
         self.face_cascade = cv2.CascadeClassifier(
@@ -66,15 +66,20 @@ class FaceRecognizer:
                     name = os.path.splitext(filename)[0]
                     self.known_names.append(name)
                     print(f"  ✓ Loaded: {name}")
+                    self.updated_number_of_contacts += 1
                 else:
                     print(f"  ✗ No face found in: {filename}")
-        
-        print(f"\nLoaded {len(self.known_names)} contacts\n")
-    
+
+        print(f"\nLoaded {self.updated_number_of_contacts} contacts\n")
+        self.updated_number_of_contacts = 0
+
     def compare_faces(self, face1, face2):
         """
         Compare two face images using histogram comparison.
         Returns a similarity score (higher = more similar).
+        --> uses feature representation via histograms
+        --> effective for simple face recognition tasks
+        --> normalizes lighting variations
         """
         # Calculate histograms
         hist1 = cv2.calcHist([face1], [0], None, [256], [0, 256])
@@ -91,13 +96,7 @@ class FaceRecognizer:
     
     def recognize_faces(self, frame):
         """
-        Detect and recognize faces in a frame.
-        
-        Args:
-            frame: BGR image from OpenCV
-            
-        Returns:
-            frame with boxes and labels drawn
+        Detect and recognize faces + draws frame with boxes and labels drawn
         """
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         
@@ -110,7 +109,7 @@ class FaceRecognizer:
         for (x, y, w, h) in faces:
             # Extract and resize face
             face_roi = gray[y:y+h, x:x+w]
-            face_roi_resized = cv2.resize(face_roi, (100, 100))
+            face_roi_resized = cv2.resize(face_roi, (150, 150))
             
             name = "Unknown"
             color = (0, 0, 255)  # Red for unknown
