@@ -169,13 +169,23 @@ class FaceRecognizer:
             frame = self.recognize_faces(frame)
             
             # Display instructions
-            cv2.putText(frame, "Press 'q' to quit", (10, 30), 
+            cv2.putText(frame, "Press 'esc' to quit", (10, 30), 
                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
             
             # Show frame
             cv2.imshow('Face Recognition', frame)
 
+            # adding photo capture to increase data
+            if cv2.waitKey(1) == 32:
+                name = input("write name and press enter to save photo: ")
+                filename = f"contacts_data/{name}.jpg"
+                cv2.imwrite(filename, frame)
+                print(f"Photo saved as {filename}")
+
+                self.load_contacts()  # Reload contacts after adding new photo
+
             if cv2.waitKey(1) == 27:
+                print("Exiting...")
                 break
         
         # Cleanup
